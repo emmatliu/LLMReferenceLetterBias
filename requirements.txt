@@ -1,0 +1,6 @@
+spacy
+sentencepiece
+tensorflow
+transformers
+tf_keras
+tokenizers
