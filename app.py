@@ -5,14 +5,14 @@ import numpy as np
 from biases_lexical_content import compute_lexical_content
 from ls_classifier import compute_sentiment_and_formality
 from agentic_classifier import compute_agentic_communal
-from hallucination_detection import detect_hallucinations
+# from hallucination_detection import detect_hallucinations
 from ttest import compute_ttest
 
 st.header("LLM Reference Letter Biases")
 
 st.write("**[(Wan et al., 2023)](https://arxiv.org/abs/2310.09219)** explores how gender biases manifest in the LLM generation of reference letters by analyzing the language style and lexical content of reference letters generated for female candidates compared to male candidates. For language style, we test for formality, positivity, and agency, and for lexical content, we identify and compare the most salient words in the body of female and male letters.")
 st.write("For analyzing language style and lexical content bias, your uploaded files should have a column called **'text'** which contains the LLM-generated reference letters.")
-st.write(" For analysis of hallucination bias, your uploaded files should also include an 'info' column associated with each generated letter which is the \"ground truth\" for that candidate against which hallucinations can be measured.  Also, please run the files through the language style bias analysis first and use the resulting files.")
+st.write("It is currently not possible to run hallucination bias analysis due to memory constraints.  Please see the [GitHub repository](https://github.com/uclanlp/biases-llm-reference-letters/) which explains how to run the analysis locally.")
 
 cols = st.columns(2)
 
@@ -25,7 +25,7 @@ with cols[0]:
     if ltr_list_2_file is not None:
         ltr_list_2 = pd.read_csv(ltr_list_2_file)
         #st.write(ltr_list_2)
-    analysis = st.selectbox("Choose analysis to run", ("Lexical Content Bias","Language Style Bias","Hallucination Bias"))
+    analysis = st.selectbox("Choose analysis to run", ("Lexical Content Bias","Language Style Bias"))
     b = st.button("Run analysis")
 with cols[1]:
     if b:
@@ -58,19 +58,19 @@ with cols[1]:
             st.subheader("T-test Values")
             results = compute_ttest(lsb_m, lsb_f)
             st.table(results)
-        elif analysis == "Hallucination Bias":
-            hal_f = detect_hallucinations(ltr_list_1)
-            hal_m = detect_hallucinations(ltr_list_2)
+        # elif analysis == "Hallucination Bias":
+        #     hal_f = detect_hallucinations(ltr_list_1)
+        #     hal_m = detect_hallucinations(ltr_list_2)
 
-            # Once we've detected the hallucinations, we now want to run the language style bias analysis on the results.
+        #     # Once we've detected the hallucinations, we now want to run the language style bias analysis on the results.
 
-            hal_lsb_f = compute_agentic_communal(compute_sentiment_and_formality(hal_f, hallucination=True), hallucination=True)
-            hal_lsb_m = compute_agentic_communal(compute_sentiment_and_formality(hal_m, hallucination=True), hallucination=True)
+        #     hal_lsb_f = compute_agentic_communal(compute_sentiment_and_formality(hal_f, hallucination=True), hallucination=True)
+        #     hal_lsb_m = compute_agentic_communal(compute_sentiment_and_formality(hal_m, hallucination=True), hallucination=True)
 
-            # Finally, ttest
+        #     # Finally, ttest
 
-            results = compute_ttest(hal_lsb_m, hal_lsb_f, hallucination=True)
-            st.table(results)
+        #     results = compute_ttest(hal_lsb_m, hal_lsb_f, hallucination=True)
+        #     st.table(results)
 
 st.write('----')
 
@@ -93,12 +93,12 @@ lc_alpaca = ['actor, listeners, fellowship, man, entertainer, needs, collection,
              'actress, grace, consummate, chops, none, beauty, game, consideration, future, up',
              'impeccable, beautiful, inspiring, illustrious, organizational, prepared, responsible, highest, ready, remarkable']
 
-hal_columns = ['(F) Formality T-test', '(M) Formality T-test', '(F) Positivity T-test', '(M) Positivity T-test',
-               '(F) Agency T-test', '(M) Agency T-test']
-hal_gpt = [1.00, 1.28e-14, 1.00, 8.28e-09, 3.05e-12, 1.00]
-hal_alpaca = [4.20e-180, 1.00, 0.99, 6.05e-11, 4.28e-10, 1.00]
+# hal_columns = ['(F) Formality T-test', '(M) Formality T-test', '(F) Positivity T-test', '(M) Positivity T-test',
+#                '(F) Agency T-test', '(M) Agency T-test']
+# hal_gpt = [1.00, 1.28e-14, 1.00, 8.28e-09, 3.05e-12, 1.00]
+# hal_alpaca = [4.20e-180, 1.00, 0.99, 6.05e-11, 4.28e-10, 1.00]
 
-tab_lc, tab_ls, tab_hal = st.tabs(['Lexical Content', 'Language Style', 'Hallucination'])
+tab_lc, tab_ls = st.tabs(['Lexical Content', 'Language Style'])
 
 with tab_lc:
     lc_df = pd.DataFrame([lc_gpt, lc_alpaca], columns=lc_columns, index=['ChatGPT','Alpaca'])
@@ -106,9 +106,9 @@ with tab_lc:
 with tab_ls:
     ls_df = pd.DataFrame([ls_gpt, ls_alpaca], columns=ls_columns, index=['ChatGPT','Alpaca'])
     st.dataframe(ls_df)
-with tab_hal:
-    hal_df = pd.DataFrame([hal_gpt, hal_alpaca], columns = hal_columns, index=['ChatGPT','Alpaca'])
-    st.dataframe(hal_df)
+# with tab_hal:
+#     hal_df = pd.DataFrame([hal_gpt, hal_alpaca], columns = hal_columns, index=['ChatGPT','Alpaca'])
+#     st.dataframe(hal_df)
 
 st.write('----')
 
