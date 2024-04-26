@@ -36,39 +36,31 @@ def run_inference(df, INPUT, TASK, classifier, label_mapping, rev_map, task_labe
 
     return inferences
 
-# TODO: remove when model is fixed :/
-def compute_agentic_communal(df, hallucination=False):
-    df['per_ac'] = np.random.rand(len(df))
-    df['con_ac'] = np.random.rand(len(df))
+def compute_agentic_communal(df,hallucination=False):
+    tokenizer = AutoTokenizer.from_pretrained("emmatliu/language-agency-classifier")
+    model = AutoModelForSequenceClassification.from_pretrained("emmatliu/language-agency-classifier")
+    classifier = pipeline("text-classification", model=model, tokenizer=tokenizer)
+    rev_map = {v: k for k, v in model.config.id2label.items()}
+
+    if hallucination:
+        INPUT = "hallucination"
+    else:
+        INPUT = "text"
+
+    TASK = "ac_classifier"
+    task_label_mapping = {
+        # Track percentage agentic / percentage agentic + percentage communal
+        "ac_classifier": ("agentic", "communal"),
+    }
+    label_mapping = {
+        "ac_classifier": {
+            0: "communal",
+            1: "agentic",
+        }
+    }
+
+    inferences = run_inference(df, INPUT, TASK, classifier, label_mapping, rev_map, task_label_mapping)
+    df["per_ac"] = [i[0] for i in inferences]
+    df["con_ac"] = [i[1] for i in inferences]
+
     return df
-
-# Need clarification on model lol
-# def compute_agentic_communal(df,hallucination=False):
-#     model_path = "./checkpoints/checkpoint-48" # 
-#     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-#     model = AutoModelForSequenceClassification.from_pretrained(model_path)
-#     classifier = pipeline("text-classification", model=model, tokenizer=tokenizer)
-#     rev_map = {v: k for k, v in model.config.id2label.items()}
-
-#     if hallucination:
-#         INPUT = "hallucination"
-#     else:
-#         INPUT = "TEXT" # need to tell users what this should be called TODO: change this to the correct column name
-
-#     TASK = "ac_classifier"
-#     task_label_mapping = {
-#         # Track percentage agentic / percentage agentic + percentage communal
-#         "ac_classifier": ("agentic", "communal"),
-#     }
-#     label_mapping = {
-#         "ac_classifier": {
-#             0: "communal",
-#             1: "agentic",
-#         }
-#     }
-
-#     inferences = run_inference(df, INPUT, TASK, classifier, label_mapping, rev_map, task_label_mapping)
-#     df["per_ac"] = [i[0] for i in inferences]
-#     df["con_ac"] = [i[1] for i in inferences]
-
-#     return df
